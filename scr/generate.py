@@ -11,6 +11,7 @@ def uniform_positions(n: int, rng: np.random.Generator) -> np.array:
     return original_positions
 
 
+# From the Ferguson paper...
 # We assumed an incubation period of 5.1 days. Infectiousness is assumed to occur from 12 hours
 # prior to the onset of symptoms for those that are symptomatic and from 4.6 days after infection in
 # those that are asymptomatic with an infectiousness profile over time that results in a 6.5-day mean
