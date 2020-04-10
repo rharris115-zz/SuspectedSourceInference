@@ -42,7 +42,7 @@ def infection_events(env: simpy.Environment, infected: Agent, rng: np.random.Gen
         print(f'@{env.now} - {infected}->{State.SYMPTOMATIC_INFECTIOUS.name}')
         infected.state = State.SYMPTOMATIC_INFECTIOUS
 
-        yield env.timeout(delay=rng.normal(loc=6.5, scale=0.4))
+        yield env.timeout(delay=rng.normal(loc=6.0, scale=0.4))
         print(f'@{env.now} - {infected}->{State.REMOVED.name}')
         infected.state = State.REMOVED
 
