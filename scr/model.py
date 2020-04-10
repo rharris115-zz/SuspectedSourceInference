@@ -6,7 +6,14 @@ class State(IntEnum):
     SUSCEPTIBLE = auto()
     INFECTED = auto()
     INFECTIOUS = auto()
+    SYMPTOMATIC_INFECTIOUS = auto()
     REMOVED = auto()
+
+    def infectious(self):
+        return self == State.INFECTIOUS or self == State.SYMPTOMATIC_INFECTIOUS
+
+    def susceptible(self):
+        return self == State.SUSCEPTIBLE
 
 
 class Agent:
