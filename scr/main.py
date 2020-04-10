@@ -1,13 +1,15 @@
 import numpy as np
 from simpy import Environment
 
-from generate import erdos_renyi_contact_events, infection_events
+from generate import erdos_renyi_contact_events, infection_events, uniform_positions
 from model import Agent
 
 
 def main():
     agents = [Agent(f'agent_{i}') for i in range(1000)]
     rng = np.random.default_rng()
+
+    positions = uniform_positions(n=1000, rng=rng)
 
     env = Environment()
 
