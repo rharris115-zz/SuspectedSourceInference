@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import simpy
+from scipy.spatial import KDTree
 
 from model import State, Agent, get_infected
 
@@ -38,6 +39,31 @@ def infection_events(env: simpy.Environment, infected: Agent, rng: np.random.Gen
         yield env.timeout(delay=rng.normal(loc=6.0, scale=0.4))
         print(f'@{env.now} - {infected}->{State.REMOVED.name}')
         infected.state = State.REMOVED
+
+
+def gravity_model_contact_events(event_rate_per_agent: float,
+                                 exponent: float,
+                                 agents: List[Agent],
+                                 positions: np.array,
+                                 env: simpy.Environment,
+                                 rng: np.random.Generator):
+    tree = KDTree(data=positions)
+    close_pairs = list(tree.query_pairs(r=0.5))
+    inverse_distances = np.array([np.linalg.norm(positions[idx1] - positions[idx2]) ** -exponent
+                                  for idx1, idx2 in close_pairs])
+    inverse_distances /= inverse_distances.sum()
+
+    while True:
+        choices = rng.choice(a=close_pairs, p=inverse_distances, size=len(agents)).tolist()
+        for choice in choices:
+            yield env.timeout(delay=rng.exponential(scale=event_rate_per_agent / len(agents)))
+            contact_agents = [agents[idx] for idx in choice]
+            # idx1, idx2 = choice
+            # d = np.linalg.norm(positions[idx1] - positions[idx2])
+            # print(f'@{env.now} - {contact_agents} - d: {d}')
+            infected = get_infected(contact_agents)
+            for i in infected:
+                env.process(generator=infection_events(env=env, infected=i, rng=rng))
 
 
 def erdos_renyi_contact_events(env: simpy.Environment,
