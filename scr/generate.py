@@ -1,7 +1,9 @@
-from typing import List, Iterable, Any, Tuple
+from typing import List
+
 import numpy as np
-from model import State, Agent
 import simpy
+
+from model import State, Agent
 
 
 # We assumed an incubation period of 5.1 days. Infectiousness is assumed to occur from 12 hours
@@ -12,12 +14,12 @@ import simpy
 def infection_events(env: simpy.Environment, infected: Agent, rng: np.random.Generator):
     print(f'@{env.now} - {infected}->{State.INFECTED.name}')
     infected.state = State.INFECTED
-
     yield env.timeout(delay=rng.normal(loc=4.6, scale=0.3))
+
     print(f'@{env.now} - {infected}->{State.INFECTIOUS.name}')
     infected.state = State.INFECTIOUS
-
     yield env.timeout(delay=rng.normal(loc=6.5, scale=0.4))
+
     print(f'@{env.now} - {infected}->{State.REMOVED.name}')
     infected.state = State.REMOVED
 

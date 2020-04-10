@@ -1,7 +1,8 @@
-from generate import erdos_renyi_contact_events, infection_events
-from model import Agent, State
-from simpy import Environment
 import numpy as np
+from simpy import Environment
+
+from generate import erdos_renyi_contact_events, infection_events
+from model import Agent
 
 
 def main():
