@@ -1,7 +1,7 @@
 import numpy as np
 from simpy import Environment
 
-from generate import erdos_renyi_contact_events, infection_events, disease_lifecycle
+from generate import erdos_renyi_contact_events, infection_events, uniform_population
 from model import Agent
 
 
@@ -9,7 +9,7 @@ def main():
     agents = [Agent(f'agent_{i}') for i in range(1000)]
     rng = np.random.default_rng()
 
-    positions = disease_lifecycle(n=1000, rng=rng)
+    positions = uniform_population(n=1000, rng=rng)
 
     env = Environment()
 

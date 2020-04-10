@@ -1,5 +1,5 @@
 from enum import IntEnum, auto, unique
-from typing import Union
+from typing import Union, Sequence, List
 
 
 @unique
@@ -44,11 +44,9 @@ class Agent:
         return f'{self.name}: {self.state.name}'
 
 
-def get_infected(a1: Agent, a2: Agent) -> Union[Agent, type(None)]:
-    s1, s2 = a1.state, a2.state
-    if s1.infectious() and s2.susceptible():
-        return a2
-    elif s1.susceptible() and s2.infectious():
-        return a1
+def get_infected(*agents: Sequence[Agent]) -> List[Agent]:
+    if any(map(lambda agent: agent.state.infectious(), *agents)):
+        susceptible = list(filter(lambda agent: agent.state.susceptible(), *agents))
+        return susceptible
     else:
-        return None
+        return []
