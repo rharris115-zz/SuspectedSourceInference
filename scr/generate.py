@@ -3,10 +3,10 @@ from typing import List
 import numpy as np
 import simpy
 
-from model import State, Agent
+from model import State, Agent, get_infected
 
 
-def uniform_positions(n: int, rng: np.random.Generator) -> np.array:
+def disease_lifecycle(n: int, rng: np.random.Generator) -> np.array:
     original_positions = rng.random((n, 2))
     return original_positions
 
@@ -44,13 +44,9 @@ def infection_events(env: simpy.Environment, infected: Agent, rng: np.random.Gen
 def erdos_renyi_contact_events(env: simpy.Environment, event_rate_per_agent: float, agents: List[Agent],
                                rng: np.random.Generator):
     while True:
-        a1, a2 = rng.choice(a=agents, size=2, replace=False)
         yield env.timeout(delay=rng.exponential(scale=event_rate_per_agent / len(agents) / 2))
 
-        s1, s2 = a1.state, a2.state
-        if s1.infectious() and s2.susceptible():
-            env.process(generator=infection_events(env=env, infected=a2, rng=rng))
-        elif s1.susceptible() and s2.infectious():
-            env.process(generator=infection_events(env=env, infected=a1, rng=rng))
-        else:
-            pass
+        a1, a2 = rng.choice(a=agents, size=2, replace=False)
+        infected = get_infected(a1=a1, a2=a2)
+        if infected is not None:
+            env.process(generator=infection_events(env=env, infected=infected, rng=rng))

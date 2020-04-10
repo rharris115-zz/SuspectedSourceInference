@@ -1,4 +1,5 @@
 from enum import IntEnum, auto, unique
+from typing import Union
 
 
 @unique
@@ -35,5 +36,19 @@ class Agent:
         assert self._state < value, f'Illegal state transition. {self._state} -> {value}'
         self._state = value
 
+    @classmethod
+    def infected(cls, a1, a2):
+        pass
+
     def __repr__(self):
         return f'{self.name}: {self.state.name}'
+
+
+def get_infected(a1: Agent, a2: Agent) -> Union[Agent, type(None)]:
+    s1, s2 = a1.state, a2.state
+    if s1.infectious() and s2.susceptible():
+        return a2
+    elif s1.susceptible() and s2.infectious():
+        return a1
+    else:
+        return None
