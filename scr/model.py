@@ -1,5 +1,7 @@
 from enum import IntEnum, auto, unique
 from typing import Sequence, List
+import numpy as np
+from infection_parameters import p_infected_given_contact
 
 
 @unique
@@ -46,9 +48,10 @@ class Agent:
         return f'{self.name}: {self.state.name}'
 
 
-def get_infected(*agents: Sequence[Agent]) -> List[Agent]:
+def get_infected(*agents: Sequence[Agent], rng: np.random.Generator) -> List[Agent]:
     if any(map(lambda agent: agent.state.infectious(), *agents)):
-        susceptible = list(filter(lambda agent: agent.state.susceptible(), *agents))
-        return susceptible
+        infected = list(filter(lambda agent: agent.state.susceptible()
+                                             and rng.uniform() < p_infected_given_contact, *agents))
+        return infected
     else:
         return []

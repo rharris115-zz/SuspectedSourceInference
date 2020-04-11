@@ -70,6 +70,6 @@ def gravity_model_contact_events(agents: List[Agent],
                 # recording. Skip to the next event.
                 continue
 
-            infected = get_infected(contact_agents)
+            infected = get_infected(contact_agents, rng=rng)
             for i in infected:
                 env.process(generator=infection_events(env=env, infected=i, rng=rng))
