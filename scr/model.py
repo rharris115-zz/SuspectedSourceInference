@@ -16,6 +16,9 @@ class State(IntEnum):
     def susceptible(self):
         return self == State.SUSCEPTIBLE
 
+    def active(self):
+        return self == State.INFECTED or self == State.INFECTIOUS or self == State.SYMPTOMATIC_INFECTIOUS
+
 
 class Agent:
 
@@ -35,10 +38,6 @@ class Agent:
     def state(self, value: State):
         assert self._state < value, f'Illegal state transition. {self._state} -> {value}'
         self._state = value
-
-    @classmethod
-    def infected(cls, a1, a2):
-        pass
 
     def __repr__(self):
         return f'{self.name}: {self.state.name}'

@@ -21,7 +21,7 @@ def main():
     env.process(infection_events(env=env, infected=source, rng=rng))
 
     contact_events = gravity_model_contact_events(event_rate_per_agent=4.0,
-                                                  exponent=2.0,
+                                                  exponent=1.75,
                                                   agents=agents,
                                                   positions=positions,
                                                   env=env, rng=rng)
@@ -61,12 +61,10 @@ def main():
             plt.legend([state.name for state in totals.keys()], loc='lower left', prop={'size': 5})
             camera.snap()
 
-            removed = totals[State.REMOVED][-2:]
-            if len(removed) > 5:
-                last = removed[-4:]
-                if all(l1 == l2 for l1, l2 in zip(last[1:], last[:-1])):
-                    print('No longer taking snaps.')
-                    break
+            infected_count = sum(total[-1] for state, total in totals.items() if state.active())
+            if env.now > 0 and infected_count == 0:
+                print('No longer taking snaps.')
+                break
 
     env.process(snap_shots())
 
