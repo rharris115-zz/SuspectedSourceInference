@@ -26,7 +26,8 @@ def main():
                                                   env=env, rng=rng)
     env.process(generator=contact_events)
 
-    fig, ax = plt.subplots()
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
     ax.set_aspect(aspect='equal')
     camera = Camera(fig)
 
@@ -51,10 +52,10 @@ def main():
 
     env.process(snap_shots())
 
-    env.run(until=200)
+    env.run(until=10)
     animation = camera.animate()
     # Need to have imagemagick installed. Brew is good on Mac.
-    animation.save('pandemic.gif', writer='imagemagick')
+    animation.save('pandemic.gif', writer='imagemagick', fps=1)
 
 
 if __name__ == '__main__':

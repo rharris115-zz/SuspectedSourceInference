@@ -18,11 +18,11 @@ def uniform_population(n: int, rng: np.random.Generator) -> np.array:
 # generation time.
 
 def infection_events(env: simpy.Environment, infected: Agent, rng: np.random.Generator):
-    print(f'@{env.now} - {infected}->{State.INFECTED.name}')
+    print(f'@t={env.now} - {infected}->{State.INFECTED.name}')
     infected.state = State.INFECTED
     yield env.timeout(delay=rng.normal(loc=4.6, scale=0.3))
 
-    print(f'@{env.now} - {infected}->{State.INFECTIOUS.name}')
+    print(f't=@{env.now} - {infected}->{State.INFECTIOUS.name}')
     infected.state = State.INFECTIOUS
 
     if rng.uniform() < 0.5:
