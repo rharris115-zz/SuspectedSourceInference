@@ -1,5 +1,5 @@
 from enum import IntEnum, auto, unique
-from typing import Union, Sequence, List
+from typing import Sequence, List
 
 
 @unique

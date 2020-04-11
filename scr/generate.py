@@ -28,16 +28,16 @@ def infection_events(env: simpy.Environment, infected: Agent, rng: np.random.Gen
     if rng.uniform() < 0.5:
         # Asymptomatic
         yield env.timeout(delay=rng.normal(loc=6.5, scale=0.4))
-        print(f'@{env.now} - {infected}->{State.REMOVED.name}')
+        print(f'@t={env.now} - {infected}->{State.REMOVED.name}')
         infected.state = State.REMOVED
     else:
         # Symptomatic
         yield env.timeout(delay=0.5)
-        print(f'@{env.now} - {infected}->{State.SYMPTOMATIC_INFECTIOUS.name}')
+        print(f'@t={env.now} - {infected}->{State.SYMPTOMATIC_INFECTIOUS.name}')
         infected.state = State.SYMPTOMATIC_INFECTIOUS
 
         yield env.timeout(delay=rng.normal(loc=6.0, scale=0.4))
-        print(f'@{env.now} - {infected}->{State.REMOVED.name}')
+        print(f'@t={env.now} - {infected}->{State.REMOVED.name}')
         infected.state = State.REMOVED
 
 
@@ -48,7 +48,7 @@ def gravity_model_contact_events(event_rate_per_agent: float,
                                  env: simpy.Environment,
                                  rng: np.random.Generator):
     tree = KDTree(data=positions)
-    close_pairs = list(tree.query_pairs(r=0.5))
+    close_pairs = list(tree.query_pairs(r=0.1))
     inverse_distances = np.array([np.linalg.norm(positions[idx1] - positions[idx2]) ** -exponent
                                   for idx1, idx2 in close_pairs])
     inverse_distances /= inverse_distances.sum()
@@ -56,11 +56,8 @@ def gravity_model_contact_events(event_rate_per_agent: float,
     while True:
         choices = rng.choice(a=close_pairs, p=inverse_distances, size=len(agents)).tolist()
         for choice in choices:
-            yield env.timeout(delay=rng.exponential(scale=event_rate_per_agent / len(agents)))
+            yield env.timeout(delay=rng.exponential(scale=1 / len(agents) / event_rate_per_agent))
             contact_agents = [agents[idx] for idx in choice]
-            # idx1, idx2 = choice
-            # d = np.linalg.norm(positions[idx1] - positions[idx2])
-            # print(f'@{env.now} - {contact_agents} - d: {d}')
             infected = get_infected(contact_agents)
             for i in infected:
                 env.process(generator=infection_events(env=env, infected=i, rng=rng))
