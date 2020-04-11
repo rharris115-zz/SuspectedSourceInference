@@ -48,7 +48,7 @@ def gravity_model_contact_events(event_rate_per_agent: float,
                                  env: simpy.Environment,
                                  rng: np.random.Generator):
     tree = KDTree(data=positions)
-    close_pairs = list(tree.query_pairs(r=0.1))
+    close_pairs = list(tree.query_pairs(r=0.25))
     inverse_distances = np.array([np.linalg.norm(positions[idx1] - positions[idx2]) ** -exponent
                                   for idx1, idx2 in close_pairs])
     inverse_distances /= inverse_distances.sum()
@@ -61,18 +61,3 @@ def gravity_model_contact_events(event_rate_per_agent: float,
             infected = get_infected(contact_agents)
             for i in infected:
                 env.process(generator=infection_events(env=env, infected=i, rng=rng))
-
-
-def erdos_renyi_contact_events(env: simpy.Environment,
-                               event_rate_per_agent: float,
-                               agents: List[Agent],
-                               rng: np.random.Generator):
-    while True:
-
-        contact_agents = rng.choice(a=agents, size=2, replace=False).tolist()
-
-        yield env.timeout(delay=rng.exponential(scale=event_rate_per_agent / len(agents) / 2))
-
-        infected = get_infected(contact_agents)
-        for i in infected:
-            env.process(generator=infection_events(env=env, infected=i, rng=rng))
