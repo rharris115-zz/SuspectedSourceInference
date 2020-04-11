@@ -5,6 +5,7 @@ from simpy import Environment
 from generate import gravity_model_contact_events, infection_events, uniform_population
 from model import Agent, State
 from celluloid import Camera
+from typing import Dict, List
 
 
 def main():
@@ -19,40 +20,57 @@ def main():
     source = agents[len(agents) // 2]
     env.process(infection_events(env=env, infected=source, rng=rng))
 
-    contact_events = gravity_model_contact_events(event_rate_per_agent=8.0,
-                                                  exponent=2.5,
+    contact_events = gravity_model_contact_events(event_rate_per_agent=4.0,
+                                                  exponent=2.0,
                                                   agents=agents,
                                                   positions=positions,
                                                   env=env, rng=rng)
     env.process(generator=contact_events)
 
     fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    ax.set_aspect(aspect='equal')
+    pop_ax = fig.add_subplot(1, 2, 1)
+    tot_ax = fig.add_subplot(1, 2, 2)
+    pop_ax.set_aspect(aspect='equal')
     camera = Camera(fig)
+
+    until = 200
 
     def snap_shots():
         x, y = positions[:, 0], positions[:, 1]
 
         state_colours = {
-            State.SUSCEPTIBLE: 'C2',
-            State.INFECTED: 'C8',
-            State.INFECTIOUS: 'C1',
-            State.SYMPTOMATIC_INFECTIOUS: 'C3',
-            State.REMOVED: 'C7'
+            State.SUSCEPTIBLE: '#2ca02c',
+            State.INFECTED: '#bcbd22',
+            State.INFECTIOUS: '#ff7f0e',
+            State.SYMPTOMATIC_INFECTIOUS: '#d62728',
+            State.REMOVED: '#7f7f7f'
         }
+
+        totals: Dict[State, List[int]] = {state: [] for state in State}
+        times: List[float] = []
         while True:
             yield env.timeout(delay=1)
             for state, colour in state_colours.items():
                 state_indices = [i for i, agent in enumerate(agents) if agent.state == state]
-                ax.scatter(x=x[state_indices], y=y[state_indices], c=colour, label=state.name)
+                pop_ax.scatter(x=x[state_indices], y=y[state_indices], c=colour, label=state.name, s=2)
+                totals[state].append(len(state_indices))
+
+            times.append(env.now)
+            tot_ax.stackplot(times, [ts for ts in totals.values()],
+                             colors=[state_colours[state] for state in totals.keys()])
+            plt.legend([state.name for state in totals.keys()], loc='lower left', prop={'size': 5})
             camera.snap()
 
-    # plt.legend(loc='center right', bbox_to_anchor=(1.35, 0.5), prop={'size': 5})
+            removed = totals[State.REMOVED][-2:]
+            if len(removed) > 5:
+                last = removed[-4:]
+                if all(l1 == l2 for l1, l2 in zip(last[1:], last[:-1])):
+                    print('No longer taking snaps.')
+                    break
 
     env.process(snap_shots())
 
-    env.run(until=10)
+    env.run(until=until)
     animation = camera.animate()
     # Need to have imagemagick installed. Brew is good on Mac.
     animation.save('pandemic.gif', writer='imagemagick', fps=1)
