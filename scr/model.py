@@ -19,6 +19,9 @@ class State(IntEnum):
     def active(self):
         return self == State.INFECTED or self == State.INFECTIOUS or self == State.SYMPTOMATIC_INFECTIOUS
 
+    def symptomatic(self):
+        return self == State.SYMPTOMATIC_INFECTIOUS
+
 
 class Agent:
 

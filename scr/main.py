@@ -6,25 +6,22 @@ from generate import gravity_model_contact_events, infection_events, uniform_pop
 from model import Agent, State
 from celluloid import Camera
 from typing import Dict, List
+from contact_parameters import n_individuals
 
 
 def main():
-    agents = [Agent(f'agent_{i}') for i in range(1000)]
+    agents = [Agent(f'agent_{i}') for i in range(n_individuals)]
     rng = np.random.default_rng()
 
-    positions = uniform_population(n=len(agents), rng=rng)
+    positions = uniform_population(rng=rng)
 
     env = Environment()
 
     # Create patient 0.
-    source = agents[len(agents) // 2]
+    source = agents[rng.integers(low=0, high=n_individuals)]
     env.process(infection_events(env=env, infected=source, rng=rng))
 
-    contact_events = gravity_model_contact_events(event_rate_per_agent=4.0,
-                                                  exponent=1.75,
-                                                  agents=agents,
-                                                  positions=positions,
-                                                  env=env, rng=rng)
+    contact_events = gravity_model_contact_events(agents=agents, positions=positions, env=env, rng=rng)
     env.process(generator=contact_events)
 
     fig = plt.figure()
@@ -46,7 +43,7 @@ def main():
             State.REMOVED: '#7f7f7f'
         }
 
-        totals: Dict[State, List[int]] = {state: [] for state in State}
+        totals: Dict[State, List[int]] = {state: [] for state in reversed(State)}
         times: List[float] = []
         while True:
             yield env.timeout(delay=1)
@@ -58,7 +55,7 @@ def main():
             times.append(env.now)
             tot_ax.stackplot(times, [ts for ts in totals.values()],
                              colors=[state_colours[state] for state in totals.keys()])
-            plt.legend([state.name for state in totals.keys()], loc='lower left', prop={'size': 5})
+            plt.legend([state.name for state in totals.keys()], loc='upper left', prop={'size': 5})
             camera.snap()
 
             infected_count = sum(total[-1] for state, total in totals.items() if state.active())
@@ -70,7 +67,7 @@ def main():
 
     env.run(until=until)
     animation = camera.animate()
-    # Need to have imagemagick installed. Brew is good on Mac.
+    # Need to have imagemagick installed.
     animation.save('pandemic.gif', writer='imagemagick', fps=1)
 
 
